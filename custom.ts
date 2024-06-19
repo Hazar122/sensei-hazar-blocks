@@ -23,6 +23,7 @@ namespace SenseisUsefulBlocks {
         return arrString
     }
     
+
     //% block="Convert $int To array of digits"
     //% group="Array Blocks" color=#63013e
     //% int.defl=0
@@ -61,7 +62,15 @@ namespace SenseisUsefulBlocks {
         return list.slice(start, end + 1)
     }
     
-    
+    //% block="$list add $value to end"
+    //% group="Array Blocks" color=#63013e
+    //% list.defl=array
+    //% list.shadow=variables_get
+    //% value.defl=value
+    //% value.shadow=variables_get
+    export function addValueToEndOfArray(list: any[], value: any) {
+        list.push(value)
+    }
     
     
     
