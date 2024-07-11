@@ -1,5 +1,5 @@
 //% weight=100 color=#0fb611 icon=""
-//% groups=['Sprite','Maths', 'Array Blocks', 'Info', 'String', 'Base Converter']
+//% groups=['Sprite','Maths', 'Array Blocks', 'Info', 'String', 'Base Converter', 'Countup']
 namespace SenseisUsefulBlocks {
     
     //% block="π pi"
@@ -106,9 +106,6 @@ namespace SenseisUsefulBlocks {
     }
     
     
-    
-    
-    
     //% block = "String $str To Upper Case"
     //% group="String" color=#8a4601
     export function stringToUpper(str: string): string {
@@ -125,8 +122,6 @@ namespace SenseisUsefulBlocks {
     export function stringToLower(str: string): string {
         return str.toLowerCase();
     }
-    
-    
     
     
     //% block="Convert $value from base $base to base 10"
@@ -176,7 +171,7 @@ namespace SenseisUsefulBlocks {
     //% group="Sprite" color=#809B01
     //% image.defl="screen_image_picker"
     export function createPlatformerSprite(sprite: Sprite, image:Image, gravity: Number, jumpPower: Number){
-    
+
     }
     
     
@@ -189,4 +184,99 @@ namespace SenseisUsefulBlocks {
         follower.follow(lead, speed, turnRate)
     }
     
+
+
+
+
+
+    let countupRunning = false;
+    let countupPreviousStamp: number;
+    let countupHudElement: scene.Renderable;
+    let countupElapsedTime = 0;
+    //% blockId=gamestartcountup block="start countup || with ui $uiOn=toggleOnOff" weight=5
+    //% group="Countup"
+    export function startCountup(uiOn: boolean = true) {
+        if (!countupRunning) {
+            countupRunning = true;
+            countupPreviousStamp = game.currentScene().millis();
+        };
+
+        if (!countupHudElement) {
+            countupElapsedTime = 0;
+            countupHudElement = scene.createRenderable(
+                scene.HUD_Z,
+                () => {
+                    if (countupRunning) {
+                        const stamp = game.currentScene().millis();
+                        countupElapsedTime += stamp - countupPreviousStamp;
+                        countupPreviousStamp = stamp;
+                    }
+                    if (uiOn) countupDrawTimer(countupElapsedTime);
+                }
+            );
+        }
+    }
+    //% blockId=gamepausecountup block="pause countup" weight=5
+    //% group="Countup"
+    export function pauseCountup() {
+        countupRunning = false;
+    }
+    //% blockId=gamegettimeelapsed block="seconds elapsed" weight=5
+    //% group="Countup"
+    export function CountupGetTimeElapsed() {
+        return countupElapsedTime / 1000;
+    }
+
+    function countupFormatDecimal(val: number) {
+        val |= 0;
+        if (val < 10) {
+            return "0" + val;
+        }
+        return val.toString();
+    }
+
+    function countupDrawTimer(millis: number) {
+        if (millis < 0) millis = 0;
+        millis |= 0;
+
+        const font = image.font8;
+        const smallFont = image.font5;
+        const seconds = Math.idiv(millis, 1000);
+        const width = font.charWidth * 5 - 2;
+        let left = (screen.width >> 1) - (width >> 1) + 1;
+        let color1 = 3;
+        let color2 = 1;
+
+        if (seconds < 10 && (seconds & 1) && !screen.isMono) {
+            const temp = color1;
+            color1 = color2;
+            color2 = temp;
+        }
+
+        screen.fillRect(left - 3, 0, width + 6, font.charHeight + 3, 3)
+        screen.fillRect(left - 2, 0, width + 4, font.charHeight + 2, color2)
+
+
+        if (seconds < 60) {
+            const top = 1;
+            const remainder = Math.idiv(millis % 1000, 10);
+
+            screen.print(countupFormatDecimal(seconds) + ".", left, top, color1, font)
+            const decimalLeft = left + 3 * font.charWidth;
+            screen.print(countupFormatDecimal(remainder), decimalLeft, top + 2, color1, smallFont)
+        }
+        else {
+            const minutes = Math.idiv(seconds, 60);
+            const remainder = seconds % 60;
+            screen.print(countupFormatDecimal(minutes) + ":" + countupFormatDecimal(remainder), left, 1, color1, font);
+        }
+    }
+
+    //% blockId=resetcountup block="reset countup" weight=5
+    //% group="Countup"
+    export function resetCountup(){
+        countupElapsedTime = 0;
+    }
+
+
 }
